@@ -1121,6 +1121,16 @@ void Frontend::news_choose(int button) {
 // the game to close, updates, rebuilds and starts it again. Without
 // update.bat (an old folder) the GitHub page opens instead
 void Frontend::start_update() {
+#if defined(__APPLE__)
+    // macOS: tools/update_mac.command in Terminal (git merge, build, start)
+    if (mac_start_update()) {
+        push(Action::Quit);
+        return;
+    }
+    printf("[menu] update: opening the GitHub page\n");
+    ShellExecuteW(nullptr, L"open", GAME_URL, nullptr, nullptr, SW_SHOWNORMAL);
+    return;
+#endif
     wchar_t module[MAX_PATH] = {};
     GetModuleFileNameW(nullptr, module, MAX_PATH);
     std::wstring dir = module;
@@ -1211,9 +1221,15 @@ void Frontend::draw_news() {
         const Style st = sel ? Style{GOLD_TOP, GOLD_BOTTOM, EDGE, U(2), 1, U(2)} : Style{PALE_TOP, PALE_BOTTOM, EDGE, U(2), 0.95f};
         text(TITLE, U(40), LABELS[b], x0 + bw / 2, by + bh / 2 - U(22), 1, st);
     }
+#if defined(__APPLE__)
+    const wchar_t* about = news_button_ == 0
+                               ? L"Closes the game, merges the new version (git), builds it again and starts it"
+                               : L"Back to the menu.  This news will not show again; tools/update_mac.command updates any time";
+#else
     const wchar_t* about = news_button_ == 0
                                ? L"Closes the game, downloads the new version, builds it again (update.bat) and starts it"
                                : L"Back to the menu.  This news will not show again; update.bat updates any time";
+#endif
     text(ITEM, U(22), about, cx, by + bh + U(26), 1, {HINT, HINT});
 }
 
