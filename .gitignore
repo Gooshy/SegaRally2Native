@@ -19,6 +19,7 @@ third_party/menu/
 # The ROM
 *.zip
 srally2.zip
+srally2/
 roms/
 # macOS: the game (GAME_IN_SOURCE_DIR), MoltenVK beside it, a launcher app, debug symbols, Finder
 /SegaRally2
