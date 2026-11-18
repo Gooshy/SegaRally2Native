@@ -8,6 +8,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #if defined(__APPLE__)
+#include <unistd.h>      // chdir
 #include "mac_win32.h"   // the Win32 calls used here, on macOS
 #else
 #include <windows.h>
@@ -321,6 +322,14 @@ void console_prompt() {
 int main(int argc, char** argv) {
     attach_parent_console();
     setvbuf(stdout, nullptr, _IONBF, 0);   // keep logs even if the process dies
+#if defined(__APPLE__)
+    // The game reads data/, res/, textures/, news.txt and save/ from the
+    // current folder. On Windows a double click starts it in its own; Finder
+    // (or a terminal elsewhere) does not, and the game then lost its HD
+    // textures, kept its settings elsewhere and saw every news entry as new.
+    // (Relative paths given on the command line are now from that folder too.)
+    if (chdir(mac_exe_dir()) != 0) fprintf(stderr, "[mac] could not change to the game's folder %s\n", mac_exe_dir());
+#endif
     // The menus (and the settings they save) are left out of test runs, so
     // those always start from the same defaults
     g_opt.menu = !options_disable_menu(argc, argv);
