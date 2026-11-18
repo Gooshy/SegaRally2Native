@@ -411,6 +411,20 @@ int mac_window_screen_height(HWND w) {
     }
 }
 
+bool mac_window_screen_size(HWND w, int* width, int* height) {
+    @autoreleasepool {
+        NSScreen* screen = w && w->window.screen ? w->window.screen : [NSScreen mainScreen];
+        NSNumber* number = screen.deviceDescription[@"NSScreenNumber"];
+        if (!number) return false;
+        CGDisplayModeRef mode = CGDisplayCopyDisplayMode(CGDirectDisplayID(number.unsignedIntValue));
+        if (!mode) return false;
+        *width = int(CGDisplayModeGetPixelWidth(mode));
+        *height = int(CGDisplayModeGetPixelHeight(mode));
+        CGDisplayModeRelease(mode);
+        return true;
+    }
+}
+
 const char* mac_exe_dir() {
     static std::string dir = [] {
         uint32_t size = 0;
